@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,8 +33,6 @@ func generateLoad(c *gin.Context) {
 
 	done = make(chan int)
 
-	//	for i := 0; i < runtime.NumCPU(); i = i + 1 {
-
 	go func() {
 		for {
 
@@ -44,26 +43,26 @@ func generateLoad(c *gin.Context) {
 			}
 		}
 	}()
-	//	}
 
 	c.JSON(http.StatusOK, "Simulating CPU load!")
+
+	go func() {
+
+		time.Sleep(2 * time.Minute)
+		stopLoad()
+
+	}()
+
 }
 
-func stopLoad(c *gin.Context) {
-
-	if servingReq == true {
-		close(done)
-		c.JSON(http.StatusOK, "Stopped CPU load!")
-		servingReq = false
-	} else {
-		c.JSON(http.StatusOK, "Not generating any load!")
-	}
+func stopLoad() {
+	close(done)
+	servingReq = false
 }
 
 func main() {
 	fmt.Print("Hello World!")
 	router.GET("/aboutme", GetuserGin)
 	router.GET("/simulateload", generateLoad)
-	router.GET("/stopload", stopLoad)
 	router.Run(":8080")
 }
